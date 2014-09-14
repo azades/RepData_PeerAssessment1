@@ -4,7 +4,11 @@ output:
   html_document:
     keep_md: true
 ---
-
+### settings
+``{r}
+echo = TRUE  
+options(scipen = 1) 
+``
 
 ## Loading and preprocessing the data
 * Show any code that is needed to

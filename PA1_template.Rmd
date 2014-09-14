@@ -70,7 +70,8 @@ averageSteps[averageSteps$meanOfSteps == max(averageSteps$meanOfSteps), ]
 
 
 ## Imputing missing values
-* The total number of rows with NAs:
+* Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+
 
 ```{r}
 sum(is.na(data))
@@ -78,7 +79,7 @@ sum(is.na(data))
 
 * Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
-My strategy is to use the mean for that 5-minute interval to fill each NA value in the steps column.
+using the mean for 5-minute interval to fill each NA value in the steps column.
 
 * Create a new dataset that is equal to the original dataset but with the missing data filled in.
 

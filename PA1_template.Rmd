@@ -126,7 +126,7 @@ oldMedian <- median(totalStepsPerDay)
 newMean - oldMean
 newMedian - oldMedian
 ```
-So, after imputing the missing data, the new mean of total steps taken per day is the same as that of the old mean; the new median of total steps taken per day is greater than that of the old median.
+After imputing the missing data, the new mean of total steps taken per day is equal to the old mean. the new median of total steps taken per day is greater thanthe old median.
 
 
 

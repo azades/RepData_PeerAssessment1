@@ -1,154 +1,103 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-### settings
+## Peer Assessment 1 
+
+### Azade Sanjari, asanjari@indiana.edu
+
+### Reproducible Research - Coursera
+
+```
+## Warning: package 'knitr' was built under R version 3.1.1
+```
+
+### Loading and preprocessing the data
+* Getting the Data
 
 ```r
-echo = TRUE  
-
-options(scipen = 1) 
+if(!file.exists("data")){
+        dir.create("data")
+        }
+fileURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(fileURL, destfile="./data/activity.zip", method="curl")
+unzip("./data/activity.zip", exdir="./data")
 ```
 
-## Loading and preprocessing the data
-Show any code that is needed to
-
-* Load the data (i.e. read.csv())
-
-* Process/transform the data (if necessary) into a format suitable for your analysis
-
-
+* Reading and preprocessing the Data
 
 ```r
-unzip("activity.zip")
+activityData <- read.csv("./data/activity.csv", colClasses=c("integer", "Date", "integer"))
+activityData$month <- as.numeric(format(activityData$date, "%m"))
+activityDataNoNA <- na.omit(activityData)
+summary(activityData)
 ```
 
 ```
-## Warning: error 1 in extracting from zip file
-```
-
-```r
-data <- read.csv("activity.csv", colClasses = c("integer", "Date", "factor"))
-```
-
-```
-## Warning: cannot open file 'activity.csv': No such file or directory
-```
-
-```
-## Error: cannot open the connection
-```
-
-```r
-data$month <- as.numeric(format(data$date, "%m"))
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
+##      steps             date               interval          month      
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0   Min.   :10.00  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8   1st Qu.:10.00  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5   Median :10.00  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5   Mean   :10.49  
+##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2   3rd Qu.:11.00  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0   Max.   :11.00  
+##  NA's   :2304
 ```
 
 ```r
-withoutNA <- na.omit(data)
-rownames(withoutNA) <- 1:nrow(withoutNA)
+head(activityData)
 ```
 
 ```
-## Error: argument of length 0
+##   steps       date interval month
+## 1    NA 2012-10-01        0    10
+## 2    NA 2012-10-01        5    10
+## 3    NA 2012-10-01       10    10
+## 4    NA 2012-10-01       15    10
+## 5    NA 2012-10-01       20    10
+## 6    NA 2012-10-01       25    10
 ```
 
-```r
-head(withoutNA)
-```
-
-```
-## Error: No method for subsetting an XMLInternalDocument with integer
-```
-
-```r
-dim(withoutNA)
-```
-
-```
-## NULL
-```
-
-```r
-library(ggplot2)
-```
-
-
-## What is mean total number of steps taken per day?
-For this part of the assignment, you can ignore the missing values in the dataset.
-
+### What is mean total number of steps taken per day?
 * Make a histogram of the total number of steps taken each day
 
 ```r
-ggplot(withoutNA, aes(date, steps)) + geom_bar(stat = "identity", colour = "steelblue", fill = "steelblue", width = 0.7) + facet_grid(. ~ month, scales = "free") + labs(title = "Total Number of Steps Taken Each Day", x = "Date", y = "Total number of steps")
+library(ggplot2)
+ggplot(activityDataNoNA, aes(date, steps)) + geom_bar(stat = "identity", colour = "green", fill = "green", width = 0.7) + facet_grid(. ~ month, scales = "free") + labs(title = "Total Number of Steps Per Day", x = "Date", y = "Total number of steps")
 ```
 
-```
-## Error: ggplot2 doesn't know how to deal with data of class
-## XMLInternalDocumentXMLAbstractDocument
-```
+![](./figures/unnamed-chunk-3-1.png) 
 
 * Calculate and report the mean and median total number of steps taken per day
 
-Mean total number of steps taken per day:
+```r
+totalStepsPerDay <- aggregate(activityData$steps, list(activityData$date), FUN = sum, na.rm=TRUE)
+head(totalStepsPerDay)
+```
+
+```
+##      Group.1     x
+## 1 2012-10-01     0
+## 2 2012-10-02   126
+## 3 2012-10-03 11352
+## 4 2012-10-04 12116
+## 5 2012-10-05 13294
+## 6 2012-10-06 15420
+```
 
 ```r
-totalStepsPerDay <- aggregate(withoutNA$steps, list(Date = withoutNA$date), FUN = "sum")$x
+meanSteps <- mean(totalStepsPerDay$x)
+medianSteps <- median(totalStepsPerDay$x)
 ```
 
-```
-## Error: object of type 'externalptr' is not subsettable
-```
+Mean of total number of steps per day is 9354.2295082 and Median of total number of steps per day is 10395.
 
-```r
-mean(totalStepsPerDay)
-```
-
-```
-## Error: object 'totalStepsPerDay' not found
-```
-Median total number of steps taken per day:
-
-```r
-median(totalStepsPerDay)
-```
-
-```
-## Error: object 'totalStepsPerDay' not found
-```
-
-## What is the average daily activity pattern?
+### What is the average daily activity pattern?
 * Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-
 ```r
-averageSteps <- aggregate(withoutNA$steps, list(interval = as.numeric(as.character(withoutNA$interval))), FUN = "mean")
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
-```
-
-```r
+averageSteps <- aggregate(activityDataNoNA$steps, list(interval = as.numeric(as.character(activityDataNoNA$interval))), FUN = "mean")
 names(averageSteps)[2] <- "meanOfSteps"
+ggplot(averageSteps, aes(interval, meanOfSteps)) + geom_line(color = "green", size = 0.8) + labs(title = "Time Series Plot of the 5-minute Interval", x = "5-minute intervals", y = "Average Number of Steps")
 ```
 
-```
-## Error: object 'averageSteps' not found
-```
-
-```r
-ggplot(averageSteps, aes(interval, meanOfSteps)) + geom_line(color = "steelblue", size = 0.8) + labs(title = "Time Series Plot of the 5-minute Interval", x = "5-minute intervals", y = "Average Number of Steps Taken")
-```
-
-```
-## Error: object 'averageSteps' not found
-```
+![](./figures/unnamed-chunk-5-1.png) 
 
 * Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -157,63 +106,49 @@ averageSteps[averageSteps$meanOfSteps == max(averageSteps$meanOfSteps), ]
 ```
 
 ```
-## Error: object 'averageSteps' not found
+##     interval meanOfSteps
+## 104      835    206.1698
 ```
 
-
-
-
-## Imputing missing values
+### Imputing missing values
 * Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-
-
 ```r
-sum(is.na(data))
+sum(is.na(activityData))
 ```
 
 ```
-## Warning: is.na() applied to non-(list or vector) of type 'externalptr'
-```
-
-```
-## [1] 0
+## [1] 2304
 ```
 
 * Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
-using the mean for 5-minute interval to fill each NA value in the steps column.
+I will use the mean for that 5-minute interval to fill each NA value in the steps column.
 
 * Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-
 ```r
-newData <- data 
-for (i in 1:nrow(newData)) {
-    if (is.na(newData$steps[i])) {
-        newData$steps[i] <- averageSteps[which(newData$interval[i] == averageSteps$interval), ]$meanOfSteps
-    }
-}
+DATA <- activityData
+for (i in 1:nrow(DATA)){
+        if (is.na(DATA$steps[i])){
+                DATA$steps[i] <- averageSteps[which(DATA$interval[i]==averageSteps$interval),         ]$meanOfSteps
+                }
+        }
+head(DATA)
 ```
 
 ```
-## Error: argument of length 0
-```
-
-```r
-head(newData)
-```
-
-```
-## Error: No method for subsetting an XMLInternalDocument with integer
+##       steps       date interval month
+## 1 1.7169811 2012-10-01        0    10
+## 2 0.3396226 2012-10-01        5    10
+## 3 0.1320755 2012-10-01       10    10
+## 4 0.1509434 2012-10-01       15    10
+## 5 0.0754717 2012-10-01       20    10
+## 6 2.0943396 2012-10-01       25    10
 ```
 
 ```r
-sum(is.na(newData))
-```
-
-```
-## Warning: is.na() applied to non-(list or vector) of type 'externalptr'
+sum(is.na(DATA))
 ```
 
 ```
@@ -222,186 +157,95 @@ sum(is.na(newData))
 
 * Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
 
-
 ```r
-ggplot(newData, aes(date, steps)) + geom_bar(stat = "identity",
-                                             colour = "steelblue",
-                                             fill = "steelblue",
-                                             width = 0.7) + facet_grid(. ~ month, scales = "free") + labs(title = "Histogram of Total Number of Steps Taken Each Day (no missing data)", x = "Date", y = "Total number of steps")
+ggplot(DATA, aes(date, steps)) + geom_bar(stat = "identity", colour = "green", fill = "green", width = 0.7) + facet_grid(. ~ month, scales = "free") + labs(title = "Histogram of Total Number of Steps Per Day (without missing data)", x = "Date", y = "Total number of steps")
 ```
 
-```
-## Error: ggplot2 doesn't know how to deal with data of class
-## XMLInternalDocumentXMLAbstractDocument
-```
+![](./figures/unnamed-chunk-9-1.png) 
 
 * Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-Mean total number of steps taken per day:
+first I will calculate the Mean of total number of steps taken per day in the data set without any missing data:
 
 ```r
-NTotalStepsPerDay <- aggregate(newData$steps, 
-                           list(Date = newData$date), 
-                           FUN = "sum")$x
+totalStepsNoNA <- aggregate(DATA$steps, list(DATA$date), FUN = sum)
+meanStepsNoNA <- mean(totalStepsNoNA$x)
+meanStepsNoNA
 ```
 
 ```
-## Error: object of type 'externalptr' is not subsettable
+## [1] 10766.19
 ```
 
-```r
-newMean <- mean(NTotalStepsPerDay)
-```
-
-```
-## Error: object 'NTotalStepsPerDay' not found
-```
+then the Median of total number of steps taken per day in the data set without any missing data:
 
 ```r
-newMean
+medianStepsNoNA <- median(totalStepsNoNA$x)
+medianStepsNoNA
 ```
 
 ```
-## Error: object 'newMean' not found
+## [1] 10766.19
 ```
-Median total number of steps taken per day:
+
+Comparing these two value with mean and median before imputing missing data:
 
 ```r
-newMedian <- median(NTotalStepsPerDay)
+meanStepsNoNA - meanSteps
 ```
 
 ```
-## Error: object 'NTotalStepsPerDay' not found
+## [1] 1411.959
 ```
 
 ```r
-newMedian
+medianStepsNoNA - medianSteps
 ```
 
 ```
-## Error: object 'newMedian' not found
+## [1] 371.1887
 ```
-Compare them with the two before imputing missing data:
+After imputing the missing data, the mean of total steps per day is the same as the old mean; the new median of total steps per day is greater than the old median.
 
-```r
-oldMean <- mean(totalStepsPerDay)
-```
-
-```
-## Error: object 'totalStepsPerDay' not found
-```
+### Are there differences in activity patterns between weekdays and weekends?
+* Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
 ```r
-oldMedian <- median(totalStepsPerDay)
+DATA$weekdays <- factor(format(DATA$date, "%A"))
+levels(DATA$weekdays)
 ```
 
 ```
-## Error: object 'totalStepsPerDay' not found
+## [1] "Friday"    "Monday"    "Saturday"  "Sunday"    "Thursday"  "Tuesday"  
+## [7] "Wednesday"
 ```
 
 ```r
-newMean - oldMean
+levels(DATA$weekdays) <- list(weekday = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), weekend = c("Saturday", "Sunday"))
+levels(DATA$weekdays)
 ```
 
 ```
-## Error: object 'newMean' not found
-```
-
-```r
-newMedian - oldMedian
-```
-
-```
-## Error: object 'newMedian' not found
-```
-After imputing the missing data, the new mean of total steps taken per day is equal to the old mean. the new median of total steps taken per day is greater thanthe old median.
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
-* Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-
-
-```r
-head(newData)
-```
-
-```
-## Error: No method for subsetting an XMLInternalDocument with integer
+## [1] "weekday" "weekend"
 ```
 
 ```r
-newData$weekdays <- factor(format(newData$date, "%A"))
+table(DATA$weekdays)
 ```
 
 ```
-## Error: object of type 'externalptr' is not subsettable
-```
-
-```r
-levels(newData$weekdays)
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
-```
-
-```r
-levels(newData$weekdays) <- list(weekday = c("Monday", "Tuesday",
-                                             "Wednesday", 
-                                             "Thursday", "Friday"),
-                                 weekend = c("Saturday", "Sunday"))
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
-```
-
-```r
-levels(newData$weekdays)
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
-```
-
-```r
-table(newData$weekdays)
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
+## 
+## weekday weekend 
+##   12960    4608
 ```
 
 * Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-
 ```r
-averageSteps <- aggregate(newData$steps, 
-                      list(interval = as.numeric(as.character(newData$interval)), 
-                           weekdays = newData$weekdays),
-                      FUN = "mean")
-```
-
-```
-## Error: object of type 'externalptr' is not subsettable
-```
-
-```r
+averageSteps <- aggregate(DATA$steps, list(interval = as.numeric(as.character(DATA$interval)), weekdays = DATA$weekdays), FUN = mean)
 names(averageSteps)[3] <- "meanOfSteps"
-```
-
-```
-## Error: object 'averageSteps' not found
-```
-
-```r
 library(lattice)
-xyplot(averageSteps$meanOfSteps ~ averageSteps$interval | averageSteps$weekdays, 
-       layout = c(1, 2), type = "l", 
-       xlab = "Interval", ylab = "Number of steps")
+xyplot(averageSteps$meanOfSteps ~ averageSteps$interval | averageSteps$weekdays, layout = c(1, 2), type = "l", xlab = "Interval", ylab = "Number of steps")
 ```
 
-```
-## Error: object 'averageSteps' not found
-```
+![](./figures/unnamed-chunk-14-1.png) 
